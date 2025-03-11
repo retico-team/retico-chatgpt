@@ -34,7 +34,7 @@ config = {
     "version": __version__,
     "python_requires": ">=3.6, <4",
     "keywords": "retico, framework, incremental, dialogue, dialog, chat, gpt, openai",
-    "install_requires": ["openai>=0.27.4"],
+    "install_requires": ["openai>1,<2"],
     "packages": find_packages(),
     "name": "retico-chatgpt",
     "classifiers": [

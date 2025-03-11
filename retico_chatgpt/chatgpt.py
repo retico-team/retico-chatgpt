@@ -11,6 +11,7 @@ input is final.
 import retico_core
 import threading
 import openai
+from openai import OpenAI
 import time
 import os
 
@@ -40,13 +41,14 @@ class ChatGPTDialogueModule(retico_core.AbstractModule):
     def __init__(
         self,
         system_prompt,
-        model="gpt-3.5-turbo",
+        model="gpt-4o-mini",
         max_tokens=1000,
         temperature=0.7,
         top_p=1,
         frequency_penalty=0,
         presence_penalty=0,
         api_key=None,
+        base_url=None,
         max_history=9,
         **kwargs,
     ):
@@ -85,8 +87,25 @@ class ChatGPTDialogueModule(retico_core.AbstractModule):
         else:
             self.api_key = os.getenv("OPENAI_API_KEY")
 
+        if base_url is not None:
+            self.base_url = base_url
+        elif os.getenv("OPENAI_BASE_URL") is not None:
+            self.base_url = os.getenv("OPENAI_BASE_URL")
+        else:
+            self.base_url = "https://api.openai.com/v1"
+
+
+        self.client = OpenAI(
+            api_key=self.api_key,
+            base_url=self.base_url
+            )
+
     def setup(self):
-        openai.api_key = self.api_key
+        self.client = OpenAI(
+            api_key=self.api_key,
+            base_url=self.base_url
+            )
+        
 
     def prepare_run(self):
         self.run_loop = True
@@ -156,7 +175,7 @@ class ChatGPTDialogueModule(retico_core.AbstractModule):
             messages.append({"role": "assistant", "content": previous_response})
         messages.append({"role": "user", "content": input})
         try:
-            completion = openai.ChatCompletion.create(
+            completion = self.client.chat.completions.create(
                 model=self.model,
                 messages=messages,
                 temperature=self.temperature,
@@ -167,15 +186,30 @@ class ChatGPTDialogueModule(retico_core.AbstractModule):
                 stream=True,
             )
             return completion
-        except openai.InvalidRequestError as e:
-            if e.code == "context_length_exceeded":
-                print(
-                    f"Context length exceeded. Reducing max_history to {self.max_history - 1}"
-                )
+        except openai.BadRequestError as e:
+            if e.code == "context_length_exceeded" or "maximum context length" in str(e.message):
                 self.max_history -= 1
-                return self.get_response()
+                if self.max_history == 0 or len(messages) <= 2:
+                    print("Context length exceeded. Last response too long.")
+                    return []
+                else:
+                    print(
+                        f"Context length exceeded. Reducing max_history to {self.max_history - 1}"
+                    )
+                    return self.get_response(input)
             else:
                 print("Error: ", e)
+                return []
+        except openai.NotFoundError as e:
+            #list avalible model
+            models = self.client.models.list().data
+            models = [model["id"] if type(model) == dict else model.id for model in models]
+
+            print(f"No model with the id {self.model} found. Available models are: {models}")
+            return []
+
+            
+
         except Exception as e:
             print("Error: ", e)
 
@@ -189,6 +223,8 @@ class ChatGPTDialogueModule(retico_core.AbstractModule):
                 current_content = ""
                 for chunk in completion:
                     choice = chunk.choices[0]
+                    if type(choice) != dict:
+                        choice = choice.to_dict()#to make it more compatible across servers
                     if choice["delta"].get("content"):
                         current_content += choice["delta"]["content"]
                         if " " in current_content:

@@ -44,5 +44,32 @@ For this example, either the environment variable `OPENAI_API_KEY` needs to be s
 
 ```bash
 OPENAI_API_KEY=<your-openai-api-key>
+OPENAI_BASE_URL="https://api.openai.com/v1" #default
 ```
+
+<br>
+Using openai alternative server such as mistral, groq, vLLM, etc..
+
+```bash
+OPENAI_BASE_URL="https://api.groq.com/openai/v1" #if using groq
+OPENAI_BASE_URL="http://0.0.0.0:8000/v1" #if using vLLM
+#default API key for vLLM is "EMPTY"
+
+
+#or alternativly
+import os
+os.environ["OPENAI_BASE_URL"] = "https://api.groq.com/openai/v1"
+os.environ["OPENAI_BASE_URL"] = "http://0.0.0.0:8000/v1"
+```
+
+<br>
+
+### Hosting vLLM
+
+1. Using the same or another environment. `pip install vllm`
+2. Host a LLM engine for a model from hugging face via 
+```
+vllm serve HuggingFaceTB/SmolLM2-135M-intermediate-checkpoints --port 8000
+```
+3. Use vLLM environment variables shown above into the ASR pipeline
 
