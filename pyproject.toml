@@ -1,0 +1,41 @@
+[build-system]
+requires = ["setuptools>=80", "setuptools-scm[simple]>=8"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "retico-chatgpt"
+dynamic = ["version"]
+dependencies = [
+    "retico-core>=2.0.0",
+    "openai>=1.0,<2",
+]
+requires-python = ">=3.8, <4"
+authors = [
+    {name = "Thilo Michael", email = "uhlomuhlo@gmail.com"},
+    {name = "Enoch Levandovsky"}
+]
+description = "The ChatGPT (OpenAI-compatible LLM) incremental module for the retico framework"
+readme = "README.md"
+license = { file = "LICENSE" }
+keywords = [
+    "retico",
+    "framework",
+    "incremental",
+    "dialogue",
+    "dialog",
+    "chat",
+    "gpt",
+    "openai",
+    "llm",
+]
+classifiers = [
+    "Development Status :: 2 - Pre-Alpha",
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: Apache Software License",
+]
+
+[project.urls]
+Repository = "https://github.com/retico-team/retico-chatgpt"
+
+[tool.setuptools_scm]
+version_file = "retico_chatgpt/version.py"
