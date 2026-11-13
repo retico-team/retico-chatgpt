@@ -33,7 +33,7 @@ os.environ["OPENAI_BASE_URL"] = "https://api.groq.com/openai/v1"
 ## Modules
 
 ### `ChatGPTDialogueModule`
-Subscribes to `TextIU` (e.g. from an ASR module) and outputs `TextIU`. Once the user's input is committed, it sends the input to the LLM and streams the response forward word by word, committing the words once the response is finished. Previous turns are kept as conversation history.
+Subscribes to `TextIU` and outputs `TextIU`. Once the user's input is committed, it sends the input to the LLM and streams the response forward word by word, committing the words once the response is finished. Previous turns are kept as conversation history.
 
 Inputs shorter than 3 characters are ignored.
 
